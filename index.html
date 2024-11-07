@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>いっきゅうさんカードゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="content">
+        <h1 id="title"></h1>
+        <p>「1」「3」「9」が出たら、カードをクリックしてね😆<br>
+            それ以外の数字が出たら、カードをクリックせずに「カードをめくる」ボタンを押してね！<br>
+            「Start」を押して、ゲーム終了後に「Stop」を押すと、秒数が表示されるよ⏰<br>
+            カードは全部で13枚。3枚取れれば完璧だよ👌</p>
+    </div>
+    <div id="message">★★★★★</div>
+    <div id="game-board">
+        <div id="current-card" class="card">?</div>
+        <button id="next-card-button">カードをめくる</button>
+    </div>
+    <p>
+        <input type="button" value="Start" id="startcount">
+        <input type="button" value="Stop" id="endcount">
+    </p>
+    <p id="PassageArea">★★★★★</p>
+
+    <div id="score-board">
+        <p>★ゲットしたトランプの枚数★: <span id="score">0</span></p>
+    </div>
+
+    <button id="restart-button">Continue</button>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const scoreDisplay = document.getElementById("score");
+            const messageDisplay = document.getElementById("message");
+            const currentCard = document.getElementById("current-card");
+            const nextCardButton = document.getElementById("next-card-button");
+            const restartButton = document.getElementById("restart-button");
+            const title = document.getElementById("title");
+            const passageArea = document.getElementById("PassageArea");
+            const startButton = document.getElementById("startcount");
+
+            const text = "いっきゅうさんカードゲーム";
+            let index = 0;
+            let score = 0;
+            let currentCardValue = 0;
+            let deck = generateDeck();
+            let PassSec = 0;
+            let PassageID = null;
+
+            function generateDeck() {
+                return Array.from({ length: 13 }, (_, i) => i + 1).sort(() => Math.random() - 0.5);
+            }
+
+            currentCard.textContent = "";
+
+            function showNextCard() {
+                if (deck.length === 0) {
+                    messageDisplay.textContent = "ゲームが終わったよ😊";
+                    nextCardButton.disabled = true;
+                    stopShowing();
+                    return;
+                }
+
+                currentCardValue = deck.pop();
+                const suits = ["♥", "♦", "♠", "♣"];
+                const suit = suits[Math.floor(Math.random() * suits.length)];
+                let displayValue = currentCardValue;
+                if (currentCardValue === 1) displayValue = "A";
+                else if (currentCardValue === 11) displayValue = "J";
+                else if (currentCardValue === 12) displayValue = "Q";
+                else if (currentCardValue === 13) displayValue = "K";
+
+                currentCard.textContent = `${suit} ${displayValue}`;
+                if (suit === "♥" || suit === "♦") {
+                    currentCard.classList.add("red");
+                    currentCard.classList.remove("black");
+                } else {
+                    currentCard.classList.add("black");
+                    currentCard.classList.remove("red");
+                }
+
+                messageDisplay.textContent = "「1」「3」「9」が出たら、カードをクリックしてね";
+            }
+
+            currentCard.addEventListener("click", () => {
+                if (currentCardValue === 1 || currentCardValue === 3 || currentCardValue === 9) {
+                    score++;
+                    scoreDisplay.textContent = `${score}`;
+                    messageDisplay.textContent = `${currentCardValue} ゲット`;
+                } else {
+                    messageDisplay.textContent = "残念😢次へ";
+                }
+                showNextCard();
+            });
+
+            nextCardButton.addEventListener("click", showNextCard);
+
+            function resetGame() {
+                score = 0;
+                scoreDisplay.textContent = score;
+                messageDisplay.textContent = "ゲームを再開する準備ができました！";
+                nextCardButton.disabled = false;
+                deck = generateDeck();
+                currentCard.textContent = "";
+                stopShowing();
+                PassageID = null;
+            }
+
+            restartButton.addEventListener("click", resetGame);
+
+            function showNextCharacter() {
+                if (index < text.length) {
+                    title.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(showNextCharacter, 500);
+                }
+            }
+            showNextCharacter();
+
+            function showPassage() {
+                PassSec++;
+                var msg = "ボタンを押してから " + PassSec + "秒";
+                passageArea.innerHTML = msg;
+            }
+
+            function startShowing() {
+                if (PassageID !== null) return;
+                PassSec = 0;
+                PassageID = setInterval(showPassage, 1000);
+                nextCardButton.disabled = false;
+            }
+
+            function resetTimer() {
+                PassSec = 0;
+                passageArea.innerHTML = "★★★★★";
+                stopShowing();
+            }
+
+            function stopShowing() {
+                if (PassageID !== null) {
+                    clearInterval(PassageID);
+                    PassageID = null;
+                }
+            }
+
+            startButton.addEventListener("click", () => {
+                resetTimer();
+                startShowing();
+            });
+        });
+    </script>
+</body>
+
+</html>
